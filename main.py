@@ -1,10 +1,10 @@
 from player import Player
+from quest import Quest
 
 def main():
     print("=" * 60)
     print("🏰 WELCOME TO THE SILVER BLADE GUILD 🏰")
     print("=" * 60)
-    print("A simple text-based guild adventure.\n")
     
     player_name = input("Enter your adventurer's name: > ").strip()
     if not player_name:
@@ -12,59 +12,58 @@ def main():
     
     player = Player(player_name)
     
-    # Game state
-    current_location = "guild_hall"
+    # First quest
+    goblin_quest = Quest(
+        title="Goblin Trouble",
+        description="The nearby village is being harassed by goblins. Defeat 3 goblins.",
+        reward_gold=30,
+        reward_exp=60
+    )
+    goblin_quest.goal = 3
     
-    print(f"\n🎉 Welcome to the guild, {player.name}!")
-    print("You are now an official member of the Silver Blade Guild.\n")
-    show_guild_hall()
+    print(f"\n🎉 Welcome to the guild, {player.name}!\n")
     
     while True:
         cmd = input("\n> ").strip().lower()
         
         if cmd in ["quit", "exit"]:
-            print(f"\nFarewell, {player.name}. May your blade stay sharp!")
+            print(f"\nFarewell, {player.name}. Safe travels!")
             break
             
         elif cmd == "help":
-            print("\n📜 Available commands:")
-            print("  help     - Show this help")
-            print("  stats    - Show your character stats")
-            print("  hall     - Return to the Guild Hall")
-            print("  quest    - View available quests")
-            print("  shop     - Visit the guild shop")
-            print("  quit     - Exit the game")
+            print("\n📜 Commands:")
+            print("  help      - Show commands")
+            print("  stats     - Show character stats")
+            print("  hall      - Go to Guild Hall")
+            print("  quests    - View your active quests")
+            print("  accept    - Accept the Goblin Trouble quest")
+            print("  quit      - Exit game")
             
         elif cmd == "stats":
             player.show_stats()
             
         elif cmd in ["hall", "guild", "guild_hall"]:
-            current_location = "guild_hall"
-            show_guild_hall()
+            show_guild_hall(player, goblin_quest)
             
-        elif cmd == "quest":
-            print("\n🗡️  Quest Board (coming in next commits...)")
-            print("No quests available yet. Check back soon!")
+        elif cmd == "quests":
+            player.show_active_quests()
             
-        elif cmd == "shop":
-            print("\n🛒 Guild Shop (coming soon...)")
-            print("Weapons, potions, and gear will be available here.")
+        elif cmd == "accept":
+            player.accept_quest(goblin_quest)
             
         else:
-            print("❌ Unknown command. Type 'help' to see available commands.")
+            print("❌ Unknown command. Type 'help' for options.")
 
-def show_guild_hall():
-    print("\n" + "="*50)
-    print("🏛️  GUILD HALL")
-    print("="*50)
-    print("You stand in the bustling main hall of the Silver Blade Guild.")
-    print(" seasoned adventurers are talking, sharpening weapons, and")
-    print(" accepting new quests from the large board on the wall.")
-    print("\nWhat would you like to do?")
-    print("  • Type 'quest' to check the Quest Board")
-    print("  • Type 'shop' to visit the Guild Shop")
-    print("  • Type 'stats' to check your status")
-    print("  • Type 'hall' to return here anytime")
+def show_guild_hall(player, goblin_quest):
+    print("\n" + "="*55)
+    print("🏛️  GUILD HALL - Quest Board")
+    print("="*55)
+    print("A large wooden board displays available quests.")
+    print("\nCurrent Quest Available:")
+    print(f"   • {goblin_quest.title}")
+    print(f"     {goblin_quest.description}")
+    print(f"     Reward: {goblin_quest.reward_gold} gold + {goblin_quest.reward_exp} EXP")
+    print("\nCommands: 'accept' to take the quest | 'quests' to check progress")
 
 if __name__ == "__main__":
     main()

@@ -1,3 +1,5 @@
+from quest import Quest
+
 class Player:
     def __init__(self, name: str):
         self.name = name
@@ -8,6 +10,7 @@ class Player:
         self.gold = 25
         self.exp = 0
         self.exp_to_next_level = 100
+        self.active_quests = []
     
     def gain_exp(self, amount: int):
         self.exp += amount
@@ -32,4 +35,22 @@ class Player:
         print(f"⚔️  Attack : {self.attack}")
         print(f"💰 Gold   : {self.gold}")
         print(f"⭐ EXP    : {self.exp}/{self.exp_to_next_level}")
+        print(f"📜 Active Quests: {len(self.active_quests)}")
         print("=" * 40)
+    
+    def accept_quest(self, quest: Quest):
+        if quest not in self.active_quests:
+            self.active_quests.append(quest)
+            print(f"✅ Accepted quest: {quest.title}")
+        else:
+            print("You already have this quest!")
+    
+    def show_active_quests(self):
+        if not self.active_quests:
+            print("You have no active quests.")
+            return
+        print("\n" + "="*40)
+        print("📋 YOUR ACTIVE QUESTS")
+        print("="*40)
+        for quest in self.active_quests:
+            quest.show_details()

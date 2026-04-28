@@ -1,3 +1,4 @@
+import random
 from player import Player
 from quest import Quest
 from enemy import Enemy, fight
@@ -5,48 +6,48 @@ from shop import Shop
 from save_manager import save_game, load_game
 
 def main():
-    print("=" * 65)
-    print("🏰 WELCOME TO THE SILVER BLADE GUILD 🏰")
-    print("=" * 65)
+    print("\n" + "═"*70)
+    print("🏰  THE SILVER BLADE GUILD  🏰".center(70))
+    print("═"*70)
     
-    # Try to load saved game
+    # Load or create new player
     loaded_player, loaded_unlocked = load_game()
     
     if loaded_player:
         player = loaded_player
         unlocked_quests = loaded_unlocked
-        print("Welcome back, adventurer!")
+        print(f"Welcome back, {player.name}!\n")
     else:
-        player_name = input("Enter your adventurer's name: > ").strip()
+        player_name = input("What is your name, adventurer? > ").strip()
         if not player_name:
             player_name = "Hero"
         player = Player(player_name)
         unlocked_quests = ["goblin"]
-        print(f"\n🎉 Welcome to the guild, {player.name}!\n")
+        print(f"\n🎉 Welcome to the Silver Blade Guild, {player.name}!\n")
     
     shop = Shop()
     
-    # Define all quests
+    # All quests including final boss
     quests = {
-        "goblin": Quest("Goblin Trouble", "Defeat 3 goblins harassing the village.", 30, 60, 3),
-        "wolf": Quest("Forest Menace", "Defeat 2 wolves on the forest road.", 45, 90, 2),
-        "bandit": Quest("Road Bandits", "Defeat 1 bandit leader ambushing merchants.", 70, 150, 1)
+        "goblin": Quest("Goblin Trouble", "Defeat 3 goblins near the village.", 30, 60, 3),
+        "wolf": Quest("Forest Menace", "Clear 2 wolves from the eastern forest road.", 45, 90, 2),
+        "bandit": Quest("Road Bandits", "Eliminate the bandit leader on the trade route.", 70, 150, 1),
+        "dragon": Quest("Dragon of Eldergloom", 
+                       "The ancient dragon has awakened! Defeat it to save the kingdom.",
+                       reward_gold=200, reward_exp=500, goal=1, is_boss=True)
     }
     
-    show_guild_hall(player, quests, unlocked_quests)
+    show_guild_hall()
     
     while True:
         if player.health <= 0:
-            print("\n💀 GAME OVER - You have been defeated...")
-            print("Better luck next time, adventurer.")
+            print("\n💀 YOU HAVE BEEN DEFEATED...")
+            print("Your journey ends here. The guild will remember your bravery.")
             break
         
-        # Check victory condition
-        if all(q.completed for q in [quests[k] for k in unlocked_quests if k in quests]):
-            print("\n🎊 CONGRATULATIONS!")
-            print(f"{player.name}, you have completed all available quests!")
-            print("You are now a respected member of the Silver Blade Guild.")
-            print("Thank you for playing Guild Quest!")
+        # Victory condition
+        if all(q.completed for q in quests.values()):
+            show_victory_screen(player)
             save_game(player, unlocked_quests)
             break
         
@@ -54,110 +55,124 @@ def main():
         
         if cmd in ["quit", "exit"]:
             save_game(player, unlocked_quests)
-            print(f"\nFarewell, {player.name}. Your progress has been saved.")
+            print(f"\n👋 Farewell, {player.name}. Your legend continues in the guild archives.")
             break
             
         elif cmd == "help":
-            print("\n📜 Commands:")
-            print("  help            - Show this help")
-            print("  stats           - Show character stats")
-            print("  hall            - Return to Guild Hall")
-            print("  questboard      - Show available quests")
-            print("  accept <name>   - Accept a quest (goblin / wolf / bandit)")
-            print("  quests          - View your active quests")
-            print("  fight           - Fight for active combat quests")
-            print("  shop            - Visit the Guild Shop")
-            print("  use <item>      - Use an item from inventory")
-            print("  save            - Manually save your progress")
-            print("  quit            - Exit and save")
+            show_help()
             
         elif cmd == "stats":
             player.show_stats()
             
         elif cmd in ["hall", "guild", "guild_hall"]:
-            show_guild_hall(player, quests, unlocked_quests)
+            show_guild_hall()
             
         elif cmd == "questboard":
             show_quest_board(quests, unlocked_quests)
             
         elif cmd.startswith("accept "):
             quest_key = cmd[7:].strip()
-            if quest_key in unlocked_quests and quest_key in quests:
+            if quest_key in unlocked_quests:
                 if quests[quest_key] not in player.active_quests:
                     player.accept_quest(quests[quest_key])
                 else:
-                    print("You already accepted this quest.")
+                    print("You have already accepted this quest.")
             else:
-                print("Quest not available.")
+                print("This quest is not yet unlocked.")
                 
         elif cmd == "quests":
             player.show_active_quests()
             
         elif cmd == "fight":
             handle_fight(player, quests, unlocked_quests)
-            save_game(player, unlocked_quests)  # Auto-save after combat
+            save_game(player, unlocked_quests)
             
         elif cmd == "shop":
             shop.show_items()
             
         elif cmd.startswith("buy "):
             try:
-                item_index = int(cmd.split()[1])
-                bought_item = shop.buy_item(player, item_index)
-                if bought_item:
-                    player.add_to_inventory(bought_item)
+                idx = int(cmd.split()[1])
+                item = shop.buy_item(player, idx)
+                if item:
+                    player.add_to_inventory(item)
                     save_game(player, unlocked_quests)
-            except (IndexError, ValueError):
+            except:
                 print("Usage: buy <number>")
                 
         elif cmd.startswith("use "):
             item_name = cmd[4:].strip()
-            player.use_item(item_name)
-            save_game(player, unlocked_quests)
-            
+            if player.use_item(item_name):
+                save_game(player, unlocked_quests)
+                
         elif cmd == "save":
             save_game(player, unlocked_quests)
             
         else:
-            print("❌ Unknown command. Type 'help' for options.")
+            print("❌ Unknown command. Type 'help' to see all commands.")
 
-def show_guild_hall(player, quests, unlocked_quests):
-    print("\n" + "="*60)
-    print("🏛️  GUILD HALL")
-    print("="*60)
-    print("You stand in the lively main hall of the Silver Blade Guild.\n")
-    print("Available actions:")
-    print("  • questboard      - See available quests")
-    print("  • accept <name>   - Accept a quest")
-    print("  • fight           - Engage in combat")
-    print("  • shop            - Buy potions")
-    print("  • save            - Save your progress")
+def show_guild_hall():
+    print("\n" + "─"*60)
+    print("🏛️  GUILD HALL".center(60))
+    print("─"*60)
+    print("The hall is filled with the sound of laughter and steel being sharpened.")
+    print("A large quest board stands proudly on the wall.\n")
+    print("Commands: questboard, accept <name>, fight, shop, stats, save")
 
 def show_quest_board(quests, unlocked_quests):
-    print("\n" + "="*50)
-    print("📋 QUEST BOARD")
-    print("="*50)
+    print("\n" + "📋 QUEST BOARD".center(60))
+    print("─"*60)
     for key in unlocked_quests:
         q = quests[key]
-        status = "✅ Completed" if q.completed else f"⏳ ({q.progress}/{q.goal})"
-        print(f"• {q.title} ({key}) - {status}")
-        print(f"  {q.description}")
-        print(f"  Reward: {q.reward_gold}g + {q.reward_exp}xp\n")
+        tag = " 🔥 BOSS" if q.is_boss else ""
+        status = "✅ Completed" if q.completed else "⏳ Available"
+        print(f"• {q.title}{tag}  [{status}]")
+        print(f"  → {q.description}")
+        print(f"  Reward: {q.reward_gold} gold + {q.reward_exp} EXP\n")
+
+def show_help():
+    print("\n📜 Available Commands:")
+    print("  help              - Show this help")
+    print("  stats             - View your character sheet")
+    print("  hall              - Return to the Guild Hall")
+    print("  questboard        - View available quests")
+    print("  accept <name>     - Accept a quest (goblin, wolf, bandit, dragon)")
+    print("  quests            - List your active quests")
+    print("  fight             - Battle for your current quest")
+    print("  shop              - Visit the guild shop")
+    print("  use <item>        - Use item from inventory")
+    print("  save              - Save your progress")
+    print("  quit              - Save and exit the game")
+
+def show_victory_screen(player):
+    print("\n" + "★"*70)
+    print("🏆  LEGENDARY VICTORY  🏆".center(70))
+    print("★"*70)
+    print(f"\nCongratulations, {player.name}!")
+    print("You have defeated the Dragon of Eldergloom and brought peace to the land.")
+    print("Your name will be forever etched in the halls of the Silver Blade Guild.")
+    print("\nFinal Stats:")
+    player.show_stats()
+    print("\nThank you for playing Guild Quest!")
 
 def handle_fight(player, quests, unlocked_quests):
-    active_combat_quests = [q for q in player.active_quests if not q.completed and q.goal > 0]
-    if not active_combat_quests:
-        print("No active combat quests. Accept one from the quest board.")
+    active = [q for q in player.active_quests if not q.completed and q.goal > 0]
+    if not active:
+        print("You have no active combat quests. Check the questboard!")
         return
     
-    current_quest = active_combat_quests[0]
+    current_quest = active[0]
     
+    # Choose enemy
     if current_quest.title == "Goblin Trouble":
         enemy = Enemy("Goblin", 25, 6, 8, 15)
     elif current_quest.title == "Forest Menace":
         enemy = Enemy("Wolf", 35, 9, 12, 25)
-    else:
-        enemy = Enemy("Bandit", 50, 12, 20, 40)
+    elif current_quest.title == "Road Bandits":
+        enemy = Enemy("Bandit Leader", 55, 13, 25, 45)
+    else:  # Dragon - Final Boss
+        enemy = Enemy("Ancient Dragon", health=120, attack=18, gold_reward=100, exp_reward=300)
+        print("🐉 The ground shakes as the mighty Dragon of Eldergloom appears!")
     
     if fight(player, enemy):
         current_quest.progress += 1
@@ -168,12 +183,16 @@ def handle_fight(player, quests, unlocked_quests):
             print(f"\n🎉 QUEST COMPLETED: {current_quest.title}!")
             
             # Unlock next quest
-            if current_quest.title == "Goblin Trouble" and "wolf" not in unlocked_quests:
-                unlocked_quests.append("wolf")
-                print("🌲 New quest unlocked: Forest Menace!")
-            elif current_quest.title == "Forest Menace" and "bandit" not in unlocked_quests:
-                unlocked_quests.append("bandit")
-                print("🏴‍☠️ New quest unlocked: Road Bandits!")
+            order = ["goblin", "wolf", "bandit", "dragon"]
+            try:
+                current_idx = order.index([k for k, v in quests.items() if v == current_quest][0])
+                if current_idx + 1 < len(order):
+                    next_key = order[current_idx + 1]
+                    if next_key not in unlocked_quests:
+                        unlocked_quests.append(next_key)
+                        print(f"🌟 New quest unlocked: {quests[next_key].title}!")
+            except:
+                pass
 
 if __name__ == "__main__":
     main()

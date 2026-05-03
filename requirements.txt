@@ -1,0 +1,2 @@
+# No external dependencies needed for this version
+# Future: pygame for GUI version

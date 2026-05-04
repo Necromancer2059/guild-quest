@@ -87,3 +87,7 @@ def handle_command(cmd, player, quests, unlocked_quests, shop):
 
 if __name__ == "__main__":
     main()
+        elif cmd.startswith("equip "):
+            item_name = cmd[6:].strip()
+            player.equip_item(item_name)
+            save_game(player, unlocked_quests)

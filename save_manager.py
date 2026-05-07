@@ -3,8 +3,13 @@ import os
 from player import Player
 from quest import Quest
 
-def save_game(player, unlocked_quests):
-    """Save player progress and unlocked quests to file"""
+SAVE_DIR = "saves"
+os.makedirs(SAVE_DIR, exist_ok=True)
+
+def get_save_path(slot: int):
+    return f"{SAVE_DIR}/save_slot_{slot}.json"
+
+def save_game(player, unlocked_quests, slot: int = 1):
     data = {
         "player": {
             "name": player.name,
@@ -15,36 +20,27 @@ def save_game(player, unlocked_quests):
             "gold": player.gold,
             "exp": player.exp,
             "exp_to_next_level": player.exp_to_next_level,
-            "active_quests": [
-                {
-                    "title": q.title,
-                    "progress": q.progress,
-                    "completed": q.completed
-                } for q in player.active_quests
-            ],
-            "inventory": [item.name for item in player.inventory]
         },
-        "unlocked_quests": unlocked_quests
+        "unlocked_quests": unlocked_quests,
+        "active_quests": [q.title for q in player.active_quests if not q.completed]
     }
     
     try:
-        with open("save_game.json", "w") as f:
+        with open(get_save_path(slot), "w") as f:
             json.dump(data, f, indent=2)
-        print("💾 Game saved successfully!")
+        print(f"💾 Game saved to Slot {slot}!")
     except Exception as e:
-        print(f"Failed to save game: {e}")
+        print(f"Save failed: {e}")
 
-def load_game():
-    """Load player progress from file"""
-    if not os.path.exists("save_game.json"):
-        print("No save file found. Starting new game.")
+def load_game(slot: int = 1):
+    path = get_save_path(slot)
+    if not os.path.exists(path):
         return None, None
     
     try:
-        with open("save_game.json", "r") as f:
+        with open(path, "r") as f:
             data = json.load(f)
         
-        # Re-create player
         player = Player(data["player"]["name"])
         player.level = data["player"]["level"]
         player.health = data["player"]["health"]
@@ -54,10 +50,25 @@ def load_game():
         player.exp = data["player"]["exp"]
         player.exp_to_next_level = data["player"]["exp_to_next_level"]
         
-        # Note: inventory and active quests are simplified for this commit
-        print(f"✅ Loaded saved game for {player.name} (Level {player.level})")
+        print(f"✅ Loaded Slot {slot} - {player.name} (Level {player.level})")
         return player, data.get("unlocked_quests", ["goblin"])
-        
-    except Exception as e:
-        print(f"Failed to load game: {e}")
+    except:
+        print(f"Failed to load Slot {slot}")
         return None, None
+
+def list_saves():
+    print("\n📂 Saved Games:")
+    print("="*40)
+    found = False
+    for i in range(1, 4):
+        path = get_save_path(i)
+        if os.path.exists(path):
+            try:
+                with open(path) as f:
+                    data = json.load(f)
+                    print(f"Slot {i}: {data['player']['name']} - Level {data['player']['level']}")
+                found = True
+            except:
+                print(f"Slot {i}: Corrupted")
+    if not found:
+        print("No saves found yet.")

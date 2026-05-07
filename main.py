@@ -1,43 +1,49 @@
 import random
+import os
 from player import Player
 from quest import Quest
 from enemy import Enemy, fight
 from shop import Shop
-from save_manager import save_game, load_game
+from save_manager import save_game, load_game, list_saves
 from achievements import AchievementSystem
 from location import create_locations
 
 def main():
-    print("\n" + "═"*72)
-    print("🏰  THE SILVER BLADE GUILD  🏰".center(72))
-    print("═"*72)
-    
+    print("\n" + "═" * 75)
+    print("🏰  THE SILVER BLADE GUILD  🏰".center(75))
+    print("═" * 75)
+
+    # Load or create player
     player, unlocked_quests = load_or_create_player()
+    
     shop = Shop()
     locations = create_locations()
     current_location = locations["guild_hall"]
     achievement_system = AchievementSystem()
     player.achievement_system = achievement_system
-    
+
     quests = create_quests()
-    
-    print(f"Current Location: {current_location.name}\n")
-    
+
+    print(f"\n📍 Current Location: {current_location.name}\n")
+
     while True:
         if player.health <= 0:
             print("\n💀 YOU HAVE BEEN DEFEATED...")
+            print("Your journey ends here.")
             break
+
         if all(q.completed for q in quests.values()):
             show_victory_screen(player)
+            save_game(player, unlocked_quests, 1)
             break
-        
+
         cmd = input("\n> ").strip().lower()
-        
+
         if cmd in ["quit", "exit"]:
-            save_game(player, unlocked_quests)
-            print("👋 Farewell!")
+            save_game(player, unlocked_quests, 1)
+            print(f"\n👋 Farewell, {player.name}!")
             break
-            
+
         elif cmd == "help":
             show_help()
         elif cmd == "stats":
@@ -53,42 +59,150 @@ def main():
         elif cmd == "shop":
             shop.show_items()
         elif cmd.startswith("buy "):
-            # ... existing buy logic ...
-            pass
+            handle_buy(cmd, player, shop, unlocked_quests)
         elif cmd.startswith("use "):
-            # ... existing use logic ...
-            pass
+            handle_use(cmd, player, unlocked_quests)
         elif cmd.startswith("equip "):
             player.equip_item(cmd[6:].strip())
         elif cmd.startswith("go "):
-            location_key = cmd[3:].strip()
-            if location_key in locations:
-                current_location = locations[location_key]
-                print(f"\nYou travel to **{current_location.name}**.")
-                print(current_location.description)
-            else:
-                print("Unknown location. Available: guild_hall, forest, cave, dragon_lair")
+            handle_travel(cmd[3:].strip(), locations, current_location)
+            current_location = locations.get(cmd[3:].strip(), current_location)
         elif cmd == "fight":
-            enemy = current_location.get_random_enemy()
-            if enemy:
-                if fight(player, enemy):
-                    # Track kills etc.
-                    player.achievement_system.check_achievements(player)
-            else:
-                print("There are no enemies here right now.")
+            handle_fight(player, current_location, achievement_system)
         elif cmd == "rest" and current_location.name == "Guild Hall":
             rest_at_guild(player)
+        elif cmd.startswith("save "):
+            try:
+                slot = int(cmd.split()[1])
+                save_game(player, unlocked_quests, slot)
+            except:
+                save_game(player, unlocked_quests, 1)
+        elif cmd.startswith("load "):
+            try:
+                slot = int(cmd.split()[1])
+                new_player, new_unlocked = load_game(slot)
+                if new_player:
+                    player = new_player
+                    unlocked_quests = new_unlocked or ["goblin"]
+                    print("✅ Character loaded successfully!")
+            except:
+                print("Usage: load <1-3>")
+        elif cmd == "saves":
+            list_saves()
         else:
-            print("Unknown command. Type 'help'.")
+            print("❌ Unknown command. Type 'help' for the list of commands.")
+
+def load_or_create_player():
+    # Try to load slot 1 by default
+    player, unlocked = load_game(1)
+    if player:
+        print(f"Welcome back, {player.name}!")
+        return player, unlocked
+    else:
+        name = input("What is your name, adventurer? > ").strip()
+        if not name:
+            name = "Hero"
+        player = Player(name)
+        print(f"\n🎉 Welcome to the Silver Blade Guild, {name}!\n")
+        return player, ["goblin"]
+
+def create_quests():
+    return {
+        "goblin": Quest("Goblin Trouble", "Defeat 3 goblins near the village.", 35, 70, 3),
+        "wolf": Quest("Forest Menace", "Clear 2 wolves from the eastern forest road.", 50, 100, 2),
+        "bandit": Quest("Road Bandits", "Eliminate the bandit leader on the trade route.", 80, 160, 1),
+        "dragon": Quest("Dragon of Eldergloom", "Defeat the ancient dragon to save the kingdom!", 250, 600, 1, True)
+    }
 
 def show_help():
-    print("\nCommands:")
-    print("  go <place>     - Travel (guild_hall, forest, cave, dragon_lair)")
-    print("  fight          - Fight in current location")
-    print("  hall / go guild_hall - Return to safety")
-    print("  questboard, accept, shop, equip, rest (in hall), achievements...")
+    print("\n📜 Available Commands:")
+    print("  help                    - Show this help")
+    print("  stats                   - Show character stats")
+    print("  achievements            - Show achievements")
+    print("  questboard              - Show available quests")
+    print("  accept <name>           - Accept a quest")
+    print("  go <location>           - Travel (guild_hall, forest, cave, dragon_lair)")
+    print("  fight                   - Fight in current location")
+    print("  shop                    - Visit the shop")
+    print("  buy <number>            - Buy item")
+    print("  use <item>              - Use item")
+    print("  equip <item>            - Equip weapon or armor")
+    print("  rest                    - Rest (only in Guild Hall)")
+    print("  save <1-3>              - Save game")
+    print("  load <1-3>              - Load game")
+    print("  saves                   - List all saves")
+    print("  quit                    - Save and exit")
 
-# Keep your other helper functions (show_victory_screen, rest_at_guild, etc.)
+def show_victory_screen(player):
+    print("\n" + "★" * 75)
+    print("🏆  LEGENDARY VICTORY  🏆".center(75))
+    print("★" * 75)
+    print(f"\nCongratulations, {player.name}!")
+    print("You have defeated the Dragon and become a legend of the guild!")
+    player.show_stats()
+
+def handle_buy(cmd, player, shop, unlocked_quests):
+    try:
+        idx = int(cmd.split()[1])
+        item = shop.buy_item(player, idx)
+        if item:
+            player.add_to_inventory(item)
+            save_game(player, unlocked_quests, 1)
+    except:
+        print("Usage: buy <number>")
+
+def handle_use(cmd, player, unlocked_quests):
+    item_name = cmd[4:].strip()
+    if player.use_item(item_name):
+        save_game(player, unlocked_quests, 1)
+
+def handle_travel(location_key, locations, current_location):
+    if location_key in locations:
+        print(f"\n🚶 You travel to the **{locations[location_key].name}**.")
+        print(locations[location_key].description)
+    else:
+        print("Unknown location. Try: guild_hall, forest, cave, dragon_lair")
+
+def handle_fight(player, current_location, achievement_system):
+    if current_location.name == "Guild Hall":
+        print("It's peaceful here. No enemies in the Guild Hall.")
+        return
+    enemy = current_location.get_random_enemy()
+    if enemy:
+        if fight(player, enemy):
+            if "Goblin" in enemy.name:
+                achievement_system.stats["goblins_killed"] += 1
+            elif "Wolf" in enemy.name:
+                achievement_system.stats["wolves_killed"] += 1
+            achievement_system.check_achievements(player)
+    else:
+        print("No enemies here right now.")
+
+def rest_at_guild(player):
+    heal_amount = 40
+    player.heal(heal_amount)
+    if player.achievement_system:
+        player.achievement_system.stats["rests"] += 1
+        player.achievement_system.check_achievements(player)
+
+def accept_quest(quest_key, player, quests, unlocked_quests):
+    if quest_key in unlocked_quests and quest_key in quests:
+        if quests[quest_key] not in player.active_quests:
+            player.accept_quest(quests[quest_key])
+        else:
+            print("You already accepted this quest.")
+    else:
+        print("Quest not available or not unlocked.")
+
+def show_quest_board(quests, unlocked_quests):
+    print("\n📋 QUEST BOARD")
+    print("="*50)
+    for key in unlocked_quests:
+        q = quests[key]
+        status = "✅ Completed" if q.completed else "⏳ Available"
+        print(f"• {q.title} [{status}]")
+        print(f"   {q.description}")
+        print(f"   Reward: {q.reward_gold} gold + {q.reward_exp} EXP\n")
 
 if __name__ == "__main__":
     main()

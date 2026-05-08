@@ -1,5 +1,10 @@
 import random
 import os
+from colorama import init, Fore, Style
+
+# Initialize colors
+init(autoreset=True)
+
 from player import Player
 from quest import Quest
 from enemy import Enemy, fight
@@ -9,11 +14,10 @@ from achievements import AchievementSystem
 from location import create_locations
 
 def main():
-    print("\n" + "═" * 75)
-    print("🏰  THE SILVER BLADE GUILD  🏰".center(75))
-    print("═" * 75)
+    print(Fore.CYAN + "\n" + "═" * 78)
+    print(Fore.YELLOW + "🏰  THE SILVER BLADE GUILD  🏰".center(78))
+    print(Fore.CYAN + "═" * 78)
 
-    # Load or create player
     player, unlocked_quests = load_or_create_player()
     
     shop = Shop()
@@ -24,12 +28,11 @@ def main():
 
     quests = create_quests()
 
-    print(f"\n📍 Current Location: {current_location.name}\n")
+    print(Fore.GREEN + f"\n📍 Current Location: {current_location.name}\n")
 
     while True:
         if player.health <= 0:
-            print("\n💀 YOU HAVE BEEN DEFEATED...")
-            print("Your journey ends here.")
+            print(Fore.RED + "\n💀 YOU HAVE BEEN DEFEATED...")
             break
 
         if all(q.completed for q in quests.values()):
@@ -37,11 +40,11 @@ def main():
             save_game(player, unlocked_quests, 1)
             break
 
-        cmd = input("\n> ").strip().lower()
+        cmd = input(Fore.WHITE + "\n> " + Style.RESET_ALL).strip().lower()
 
         if cmd in ["quit", "exit"]:
             save_game(player, unlocked_quests, 1)
-            print(f"\n👋 Farewell, {player.name}!")
+            print(Fore.YELLOW + f"\n👋 Farewell, {player.name}!")
             break
 
         elif cmd == "help":
@@ -60,6 +63,73 @@ def main():
             shop.show_items()
         elif cmd.startswith("buy "):
             handle_buy(cmd, player, shop, unlocked_quests)
+        elif cmd.startswith("use "):
+            handle_use(cmd, player, unlocked_quests)
+        elif cmd.startswith("equip "):
+            player.equip_item(cmd[6:].strip())
+        elif cmd.startswith("go "):
+            loc_key = cmd[3:].strip()
+            if loc_key in locations:
+                current_location = locations[loc_key]
+                print(Fore.CYAN + f"\n🚶 You travel to the {current_location.name}.")
+                print(Fore.WHITE + current_location.description)
+            else:
+                print(Fore.RED + "Unknown location.")
+        elif cmd == "fight":
+            handle_fight(player, current_location, achievement_system)
+        elif cmd == "rest" and current_location.name == "Guild Hall":
+            rest_at_guild(player)
+        elif cmd.startswith("save "):
+            try:
+                slot = int(cmd.split()[1])
+                save_game(player, unlocked_quests, slot)
+            except:
+                save_game(player, unlocked_quests, 1)
+        elif cmd.startswith("load "):
+            try:
+                slot = int(cmd.split()[1])
+                new_player, new_unlocked = load_game(slot)
+                if new_player:
+                    player = new_player
+                    unlocked_quests = new_unlocked or ["goblin"]
+                    print(Fore.GREEN + "✅ Character loaded successfully!")
+            except:
+                print(Fore.RED + "Usage: load <1-3>")
+        elif cmd == "saves":
+            list_saves()
+        else:
+            print(Fore.RED + "❌ Unknown command. Type 'help'.")
+
+# === Helper Functions (with colors) ===
+def load_or_create_player():
+    player, unlocked = load_game(1)
+    if player:
+        print(Fore.GREEN + f"Welcome back, {player.name}!")
+        return player, unlocked
+    else:
+        name = input(Fore.WHITE + "What is your name, adventurer? > " + Style.RESET_ALL).strip() or "Hero"
+        player = Player(name)
+        print(Fore.GREEN + f"\n🎉 Welcome to the Silver Blade Guild, {name}!\n")
+        return player, ["goblin"]
+
+def show_help():
+    print(Fore.CYAN + "\n📜 Available Commands:" + Style.RESET_ALL)
+    print("  help, stats, achievements, questboard, go <location>")
+    print("  fight, shop, buy <num>, use <item>, equip <item>")
+    print("  rest (in hall), save <1-3>, load <1-3>, saves, quit")
+
+def show_victory_screen(player):
+    print(Fore.YELLOW + "\n" + "★" * 78)
+    print("🏆  LEGENDARY VICTORY  🏆".center(78))
+    print("★" * 78 + Style.RESET_ALL)
+    print(Fore.GREEN + f"\nCongratulations, {player.name}!")
+    player.show_stats()
+
+# Keep your existing helper functions (handle_buy, handle_use, handle_fight, etc.)
+# You can keep them the same as the previous full main.py I gave you.
+
+if __name__ == "__main__":
+    main()            handle_buy(cmd, player, shop, unlocked_quests)
         elif cmd.startswith("use "):
             handle_use(cmd, player, unlocked_quests)
         elif cmd.startswith("equip "):

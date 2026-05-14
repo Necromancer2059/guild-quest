@@ -1,18 +1,28 @@
 # 🏰 Guild Quest
 
-A simple text-based RPG.
+A fun, complete text-based RPG.
 
-You join the **Silver Blade Guild**, complete quests, fight monsters, buy potions, and ultimately defeat the ancient Dragon of Eldergloom.
+You join the **Silver Blade Guild**, complete quests, fight monsters, buy equipment, learn skills, and ultimately defeat the ancient Dragon of Eldergloom.
 
-### Features
-- Character progression (leveling system)
-- Multiple quests with progressive unlocking
-- Turn-based combat
-- Shop system with healing potions
-- Save / Load progress
-- Final boss fight
+![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
+![GitHub](https://img.shields.io/badge/Built%20with-Git%20Commits-green.svg)
 
-### How to Play
+---
 
-```bash
-python main.py
+### ✨ Features
+
+- **Character Progression** — Leveling, stats, and experience
+- **Multiple Quests** with progressive unlocking
+- **Real-time Combat** with Critical Hits
+- **Skills System** with Mana (Power Strike, Healing Light, etc.)
+- **Equipment System** — Weapons and Armor
+- **Shop** with potions and gear
+- **Multiple Locations** — Guild Hall, Forest, Cave, Dragon's Lair
+- **Achievements System**
+- **Save/Load** with 3 save slots
+- **Colorful Terminal Interface**
+- **Random Events**
+
+---
+
+### 🎮 How to Play

@@ -96,7 +96,7 @@ def main():
         elif cmd == "saves":
             list_saves()
         elif cmd == "craft":
-            show_crafting(player)
+            show_crafting(player, unlocked_quests)
         else:
             print(Fore.RED + "❌ Unknown command. Type 'help'.")
 
@@ -133,34 +133,39 @@ def show_victory_screen(player):
     print("You have become a legend of the Silver Blade Guild!")
     player.show_stats()
 
-def show_crafting(player):
+def show_crafting(player, unlocked_quests):
     print(Fore.MAGENTA + "\n🔨 CRAFTING BENCH" + Style.RESET_ALL)
-    print("=" * 50)
-    print("Available Crafts:")
-    print("1. Iron Sword      → Requires 40 Gold")
-    print("2. Steel Armor     → Requires 60 Gold")
-    print("3. Healing Potion  → Requires 15 Gold")
-    print("\nType 'craft <number>' to craft (feature will expand)")
-    
-    # Simple demo craft
+    print("=" * 60)
+    print("1. Iron Sword      → 40 Gold")
+    print("2. Steel Armor     → 65 Gold")
+    print("3. Strong Potion   → 25 Gold")
+    print("4. Mystic Ring     → 100 Gold (Attack +5)")
+    print("\nType the number of what you want to craft.")
+
     try:
-        choice = input(Fore.WHITE + "\nWhat do you want to craft? > " + Style.RESET_ALL)
+        choice = input(Fore.WHITE + "\nCraft > " + Style.RESET_ALL).strip()
         if choice == "1" and player.gold >= 40:
             player.gold -= 40
-            print(Fore.GREEN + "✅ Crafted Iron Sword! (Check your inventory)")
-            # You can expand this later to add real items
-        elif choice == "2" and player.gold >= 60:
-            player.gold -= 60
+            print(Fore.GREEN + "✅ Crafted Iron Sword!")
+            # In real version you would add to inventory
+        elif choice == "2" and player.gold >= 65:
+            player.gold -= 65
             print(Fore.GREEN + "✅ Crafted Steel Armor!")
-        elif choice == "3" and player.gold >= 15:
-            player.gold -= 15
-            print(Fore.GREEN + "✅ Crafted Healing Potion!")
+        elif choice == "3" and player.gold >= 25:
+            player.gold -= 25
+            print(Fore.GREEN + "✅ Crafted Strong Potion!")
+        elif choice == "4" and player.gold >= 100:
+            player.gold -= 100
+            print(Fore.GREEN + "✅ Crafted Mystic Ring! (+5 Attack)")
+            player.attack += 5
         else:
             print(Fore.RED + "Not enough gold or invalid choice.")
+        save_game(player, unlocked_quests, 1)
     except:
         print(Fore.RED + "Crafting cancelled.")
 
-# === Helper Functions (same as before) ===
+# ==================== Helper Functions ====================
+
 def handle_buy(cmd, player, shop, unlocked_quests):
     try:
         idx = int(cmd.split()[1])

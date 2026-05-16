@@ -11,6 +11,7 @@ from save_manager import save_game, load_game, list_saves
 from achievements import AchievementSystem
 from location import create_locations
 from skills import SkillSystem
+from item import Item   # Make sure this import works
 
 def main():
     print(Fore.CYAN + "\n" + "═" * 85)
@@ -129,13 +130,14 @@ def show_help():
 
 def show_inventory(player):
     print(Fore.MAGENTA + "\n🎒 INVENTORY" + Style.RESET_ALL)
-    print("=" * 50)
+    print("=" * 55)
     if not player.inventory:
         print("Your inventory is empty.")
     else:
         for i, item in enumerate(player.inventory, 1):
-            print(f"{i}. {item.name} - {item.description}")
-    print("=" * 50)
+            status = " [Equipped]" if (player.equipped_weapon == item or player.equipped_armor == item) else ""
+            print(f"{i}. {item.name}{status}")
+    print("=" * 55)
 
 def show_victory_screen(player):
     print(Fore.YELLOW + "\n" + "★" * 85)
@@ -152,30 +154,35 @@ def show_crafting(player, unlocked_quests):
     print("2. Steel Armor     → 65 Gold")
     print("3. Strong Potion   → 25 Gold")
     print("4. Mystic Ring     → 100 Gold (+5 Attack)")
-    print("\nType the number to craft.")
+    print("\nEnter number to craft.")
 
     try:
         choice = input(Fore.WHITE + "\nCraft > " + Style.RESET_ALL).strip()
+        crafted = None
         if choice == "1" and player.gold >= 40:
             player.gold -= 40
-            print(Fore.GREEN + "✅ Crafted Iron Sword!")
+            crafted = Item("Iron Sword", "A well-forged sword", 0, 0, attack_bonus=10, is_equipment=True)
         elif choice == "2" and player.gold >= 65:
             player.gold -= 65
-            print(Fore.GREEN + "✅ Crafted Steel Armor!")
+            crafted = Item("Steel Armor", "Sturdy protective armor", 0, 0, health_bonus=30, is_equipment=True)
         elif choice == "3" and player.gold >= 25:
             player.gold -= 25
-            print(Fore.GREEN + "✅ Crafted Strong Potion!")
+            crafted = Item("Strong Potion", "Restores 50 health", 0, heal_amount=50)
         elif choice == "4" and player.gold >= 100:
             player.gold -= 100
-            player.attack += 5
-            print(Fore.GREEN + "✅ Crafted Mystic Ring! Attack increased by 5.")
+            crafted = Item("Mystic Ring", "A magical ring", 0, 0, attack_bonus=5, is_equipment=True)
+
+        if crafted:
+            player.add_to_inventory(crafted)
+            print(Fore.GREEN + f"✅ Successfully crafted {crafted.name}!")
+            save_game(player, unlocked_quests, 1)
         else:
             print(Fore.RED + "Not enough gold or invalid choice.")
-        save_game(player, unlocked_quests, 1)
     except:
         print(Fore.RED + "Crafting cancelled.")
 
-# Helper Functions
+# ==================== Helper Functions ====================
+
 def handle_buy(cmd, player, shop, unlocked_quests):
     try:
         idx = int(cmd.split()[1])

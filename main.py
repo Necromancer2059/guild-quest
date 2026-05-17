@@ -11,7 +11,7 @@ from save_manager import save_game, load_game, list_saves
 from achievements import AchievementSystem
 from location import create_locations
 from skills import SkillSystem
-from item import Item   # Make sure this import works
+from item import Item
 
 def main():
     print(Fore.CYAN + "\n" + "═" * 85)
@@ -135,7 +135,7 @@ def show_inventory(player):
         print("Your inventory is empty.")
     else:
         for i, item in enumerate(player.inventory, 1):
-            status = " [Equipped]" if (player.equipped_weapon == item or player.equipped_armor == item) else ""
+            status = " [Equipped]" if (getattr(player, 'equipped_weapon', None) == item or getattr(player, 'equipped_armor', None) == item) else ""
             print(f"{i}. {item.name}{status}")
     print("=" * 55)
 
@@ -154,23 +154,22 @@ def show_crafting(player, unlocked_quests):
     print("2. Steel Armor     → 65 Gold")
     print("3. Strong Potion   → 25 Gold")
     print("4. Mystic Ring     → 100 Gold (+5 Attack)")
-    print("\nEnter number to craft.")
-
+    
     try:
         choice = input(Fore.WHITE + "\nCraft > " + Style.RESET_ALL).strip()
         crafted = None
         if choice == "1" and player.gold >= 40:
             player.gold -= 40
-            crafted = Item("Iron Sword", "A well-forged sword", 0, 0, attack_bonus=10, is_equipment=True)
+            crafted = Item("Iron Sword", "A sharp iron sword", 0, 0, attack_bonus=10, is_equipment=True)
         elif choice == "2" and player.gold >= 65:
             player.gold -= 65
-            crafted = Item("Steel Armor", "Sturdy protective armor", 0, 0, health_bonus=30, is_equipment=True)
+            crafted = Item("Steel Armor", "Strong protective armor", 0, 0, health_bonus=35, is_equipment=True)
         elif choice == "3" and player.gold >= 25:
             player.gold -= 25
             crafted = Item("Strong Potion", "Restores 50 health", 0, heal_amount=50)
         elif choice == "4" and player.gold >= 100:
             player.gold -= 100
-            crafted = Item("Mystic Ring", "A magical ring", 0, 0, attack_bonus=5, is_equipment=True)
+            crafted = Item("Mystic Ring", "Magical ring", 0, 0, attack_bonus=5, is_equipment=True)
 
         if crafted:
             player.add_to_inventory(crafted)
@@ -211,11 +210,31 @@ def handle_fight(player, current_location, achievement_system):
     if current_location.name == "Guild Hall":
         print(Fore.YELLOW + "It's peaceful here.")
         return
+    
     enemy = current_location.get_random_enemy()
-    if enemy and fight(player, enemy):
-        if "Goblin" in enemy.name: achievement_system.stats["goblins_killed"] += 1
-        if "Wolf" in enemy.name: achievement_system.stats["wolves_killed"] += 1
-        achievement_system.check_achievements(player)
+    if enemy:
+        if fight(player, enemy):
+            # Drop System
+            drop_item = get_random_drop(enemy)
+            if drop_item:
+                player.add_to_inventory(drop_item)
+                print(Fore.GREEN + f"🎁 Dropped: {drop_item.name}!")
+            
+            if "Goblin" in enemy.name: achievement_system.stats["goblins_killed"] += 1
+            if "Wolf" in enemy.name: achievement_system.stats["wolves_killed"] += 1
+            achievement_system.check_achievements(player)
+            save_game(player, [], 1)  # Auto save after fight
+
+def get_random_drop(enemy):
+    if random.random() < 0.35:  # 35% chance to drop something
+        drops = [
+            Item("Goblin Ear", "A trophy from a goblin", 8),
+            Item("Wolf Fang", "Sharp wolf fang", 12),
+            Item("Healing Herb", "Restores 20 health", 0, heal_amount=20),
+            Item("Rusty Dagger", "Old dagger", 0, 0, attack_bonus=3, is_equipment=True)
+        ]
+        return random.choice(drops)
+    return None
 
 def rest_at_guild(player):
     player.heal(45)

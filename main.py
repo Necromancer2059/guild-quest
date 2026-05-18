@@ -14,9 +14,9 @@ from skills import SkillSystem
 from item import Item
 
 def main():
-    print(Fore.CYAN + "\n" + "═" * 85)
-    print(Fore.YELLOW + "🏰  THE SILVER BLADE GUILD  🏰".center(85))
-    print(Fore.CYAN + "═" * 85 + Style.RESET_ALL)
+    print(Fore.CYAN + "\n" + "═" * 88)
+    print(Fore.YELLOW + "🏰  THE SILVER BLADE GUILD  🏰".center(88))
+    print(Fore.CYAN + "═" * 88 + Style.RESET_ALL)
 
     player, unlocked_quests = load_or_create_player()
     
@@ -29,7 +29,7 @@ def main():
 
     quests = create_quests()
 
-    print(Fore.GREEN + f"\n📍 You are currently in: {current_location.name}\n")
+    print(Fore.GREEN + f"\n📍 Current Location: {current_location.name}\n")
 
     while True:
         if player.health <= 0:
@@ -45,7 +45,7 @@ def main():
 
         if cmd in ["quit", "exit"]:
             save_game(player, unlocked_quests, 1)
-            print(Fore.YELLOW + f"\n👋 Farewell, {player.name}!")
+            print(Fore.YELLOW + f"\n👋 Farewell, {player.name}! Your adventure continues in legend.")
             break
 
         elif cmd == "help":
@@ -93,7 +93,7 @@ def main():
                     unlocked_quests = new_unlocked or ["goblin"]
                     player.achievement_system = achievement_system
                     player.skill_system = SkillSystem()
-                    print(Fore.GREEN + f"✅ Loaded Slot {slot}!")
+                    print(Fore.GREEN + f"✅ Loaded Slot {slot} successfully!")
             except:
                 print(Fore.RED + "Usage: load <1-3>")
         elif cmd == "saves":
@@ -119,7 +119,7 @@ def create_quests():
         "goblin": Quest("Goblin Trouble", "Defeat 3 goblins near the village.", 35, 70, 3),
         "wolf": Quest("Forest Menace", "Clear 2 wolves from the forest road.", 50, 100, 2),
         "bandit": Quest("Road Bandits", "Defeat the bandit leader.", 80, 160, 1),
-        "dragon": Quest("Dragon of Eldergloom", "Defeat the ancient dragon!", 250, 600, 1, True)
+        "dragon": Quest("Dragon of Eldergloom", "Defeat the ancient dragon to save the kingdom!", 250, 600, 1, True)
     }
 
 def show_help():
@@ -130,21 +130,21 @@ def show_help():
 
 def show_inventory(player):
     print(Fore.MAGENTA + "\n🎒 INVENTORY" + Style.RESET_ALL)
-    print("=" * 55)
+    print("=" * 60)
     if not player.inventory:
         print("Your inventory is empty.")
     else:
         for i, item in enumerate(player.inventory, 1):
             status = " [Equipped]" if (getattr(player, 'equipped_weapon', None) == item or getattr(player, 'equipped_armor', None) == item) else ""
             print(f"{i}. {item.name}{status}")
-    print("=" * 55)
+    print("=" * 60)
 
 def show_victory_screen(player):
-    print(Fore.YELLOW + "\n" + "★" * 85)
-    print("🏆  LEGENDARY VICTORY  🏆".center(85))
-    print("★" * 85 + Style.RESET_ALL)
+    print(Fore.YELLOW + "\n" + "★" * 88)
+    print("🏆  LEGENDARY VICTORY  🏆".center(88))
+    print("★" * 88 + Style.RESET_ALL)
     print(Fore.GREEN + f"\nCongratulations, {player.name}!")
-    print("You have become a legend of the Silver Blade Guild!")
+    print("You have completed all quests and defeated the Dragon!")
     player.show_stats()
 
 def show_crafting(player, unlocked_quests):
@@ -203,38 +203,37 @@ def handle_go(loc_key, locations, current):
         print(Fore.WHITE + new_loc.description)
         return new_loc
     else:
-        print(Fore.RED + "Unknown location.")
+        print(Fore.RED + "Unknown location. Try: guild_hall, forest, cave, dragon_lair")
         return current
 
 def handle_fight(player, current_location, achievement_system):
     if current_location.name == "Guild Hall":
         print(Fore.YELLOW + "It's peaceful here.")
         return
-    
     enemy = current_location.get_random_enemy()
-    if enemy:
-        if fight(player, enemy):
-            # Drop System
-            drop_item = get_random_drop(enemy)
-            if drop_item:
-                player.add_to_inventory(drop_item)
-                print(Fore.GREEN + f"🎁 Dropped: {drop_item.name}!")
-            
-            if "Goblin" in enemy.name: achievement_system.stats["goblins_killed"] += 1
-            if "Wolf" in enemy.name: achievement_system.stats["wolves_killed"] += 1
-            achievement_system.check_achievements(player)
-            save_game(player, [], 1)  # Auto save after fight
+    if enemy and fight(player, enemy):
+        drop = get_random_drop(enemy)
+        if drop:
+            player.add_to_inventory(drop)
+            print(Fore.GREEN + f"🎁 You found: {drop.name}!")
+        
+        if "Goblin" in enemy.name: achievement_system.stats["goblins_killed"] += 1
+        if "Wolf" in enemy.name: achievement_system.stats["wolves_killed"] += 1
+        achievement_system.check_achievements(player)
+        save_game(player, [], 1)
 
 def get_random_drop(enemy):
-    if random.random() < 0.35:  # 35% chance to drop something
-        drops = [
-            Item("Goblin Ear", "A trophy from a goblin", 8),
-            Item("Wolf Fang", "Sharp wolf fang", 12),
-            Item("Healing Herb", "Restores 20 health", 0, heal_amount=20),
-            Item("Rusty Dagger", "Old dagger", 0, 0, attack_bonus=3, is_equipment=True)
-        ]
-        return random.choice(drops)
-    return None
+    chance = 0.45
+    if random.random() > chance:
+        return None
+    drops = [
+        Item("Goblin Ear", "A gross trophy", 8),
+        Item("Wolf Fang", "Sharp fang", 12),
+        Item("Healing Herb", "Restores 20 health", 0, heal_amount=20),
+        Item("Rusty Dagger", "Old weapon", 0, 0, attack_bonus=4, is_equipment=True),
+        Item("Mana Crystal", "Restores 15 mana", 0)
+    ]
+    return random.choice(drops)
 
 def rest_at_guild(player):
     player.heal(45)

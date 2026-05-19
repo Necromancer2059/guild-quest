@@ -14,9 +14,10 @@ from skills import SkillSystem
 from item import Item
 
 def main():
-    print(Fore.CYAN + "\n" + "═" * 88)
-    print(Fore.YELLOW + "🏰  THE SILVER BLADE GUILD  🏰".center(88))
-    print(Fore.CYAN + "═" * 88 + Style.RESET_ALL)
+    print(Fore.CYAN + "\n" + "═" * 90)
+    print(Fore.YELLOW + "🏰  THE SILVER BLADE GUILD  🏰".center(90))
+    print(Fore.CYAN + "═" * 90 + Style.RESET_ALL)
+    print(Fore.WHITE + "          A Text-Based RPG Adventure\n".center(90))
 
     player, unlocked_quests = load_or_create_player()
     
@@ -34,6 +35,7 @@ def main():
     while True:
         if player.health <= 0:
             print(Fore.RED + "\n💀 YOU HAVE BEEN DEFEATED...")
+            print("The guild will remember your bravery.")
             break
 
         if all(q.completed for q in quests.values()):
@@ -45,7 +47,7 @@ def main():
 
         if cmd in ["quit", "exit"]:
             save_game(player, unlocked_quests, 1)
-            print(Fore.YELLOW + f"\n👋 Farewell, {player.name}! Your adventure continues in legend.")
+            print(Fore.YELLOW + f"\n👋 Farewell, {player.name}!")
             break
 
         elif cmd == "help":
@@ -140,11 +142,12 @@ def show_inventory(player):
     print("=" * 60)
 
 def show_victory_screen(player):
-    print(Fore.YELLOW + "\n" + "★" * 88)
-    print("🏆  LEGENDARY VICTORY  🏆".center(88))
-    print("★" * 88 + Style.RESET_ALL)
+    print(Fore.YELLOW + "\n" + "★" * 90)
+    print("🏆  LEGENDARY VICTORY  🏆".center(90))
+    print("★" * 90 + Style.RESET_ALL)
     print(Fore.GREEN + f"\nCongratulations, {player.name}!")
-    print("You have completed all quests and defeated the Dragon!")
+    print("You have completed every quest and slain the Dragon!")
+    print("You are now a true legend of the Silver Blade Guild.\n")
     player.show_stats()
 
 def show_crafting(player, unlocked_quests):
@@ -160,23 +163,21 @@ def show_crafting(player, unlocked_quests):
         crafted = None
         if choice == "1" and player.gold >= 40:
             player.gold -= 40
-            crafted = Item("Iron Sword", "A sharp iron sword", 0, 0, attack_bonus=10, is_equipment=True)
+            crafted = Item("Iron Sword", "A reliable blade", 0, 0, attack_bonus=10, is_equipment=True)
         elif choice == "2" and player.gold >= 65:
             player.gold -= 65
-            crafted = Item("Steel Armor", "Strong protective armor", 0, 0, health_bonus=35, is_equipment=True)
+            crafted = Item("Steel Armor", "Heavy protection", 0, 0, health_bonus=35, is_equipment=True)
         elif choice == "3" and player.gold >= 25:
             player.gold -= 25
             crafted = Item("Strong Potion", "Restores 50 health", 0, heal_amount=50)
         elif choice == "4" and player.gold >= 100:
             player.gold -= 100
-            crafted = Item("Mystic Ring", "Magical ring", 0, 0, attack_bonus=5, is_equipment=True)
+            crafted = Item("Mystic Ring", "Increases attack", 0, 0, attack_bonus=5, is_equipment=True)
 
         if crafted:
             player.add_to_inventory(crafted)
-            print(Fore.GREEN + f"✅ Successfully crafted {crafted.name}!")
+            print(Fore.GREEN + f"✅ Crafted: {crafted.name}")
             save_game(player, unlocked_quests, 1)
-        else:
-            print(Fore.RED + "Not enough gold or invalid choice.")
     except:
         print(Fore.RED + "Crafting cancelled.")
 
@@ -203,7 +204,7 @@ def handle_go(loc_key, locations, current):
         print(Fore.WHITE + new_loc.description)
         return new_loc
     else:
-        print(Fore.RED + "Unknown location. Try: guild_hall, forest, cave, dragon_lair")
+        print(Fore.RED + "Unknown location.")
         return current
 
 def handle_fight(player, current_location, achievement_system):
@@ -215,23 +216,20 @@ def handle_fight(player, current_location, achievement_system):
         drop = get_random_drop(enemy)
         if drop:
             player.add_to_inventory(drop)
-            print(Fore.GREEN + f"🎁 You found: {drop.name}!")
+            print(Fore.GREEN + f"🎁 Dropped: {drop.name}!")
         
         if "Goblin" in enemy.name: achievement_system.stats["goblins_killed"] += 1
         if "Wolf" in enemy.name: achievement_system.stats["wolves_killed"] += 1
         achievement_system.check_achievements(player)
-        save_game(player, [], 1)
 
 def get_random_drop(enemy):
-    chance = 0.45
-    if random.random() > chance:
+    if random.random() < 0.4:
         return None
     drops = [
-        Item("Goblin Ear", "A gross trophy", 8),
+        Item("Goblin Ear", "Trophy", 8),
         Item("Wolf Fang", "Sharp fang", 12),
-        Item("Healing Herb", "Restores 20 health", 0, heal_amount=20),
-        Item("Rusty Dagger", "Old weapon", 0, 0, attack_bonus=4, is_equipment=True),
-        Item("Mana Crystal", "Restores 15 mana", 0)
+        Item("Healing Herb", "Restores 20 HP", 0, heal_amount=20),
+        Item("Rusty Dagger", "Old weapon", 0, 0, attack_bonus=4, is_equipment=True)
     ]
     return random.choice(drops)
 

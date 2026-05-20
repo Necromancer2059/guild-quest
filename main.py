@@ -17,7 +17,7 @@ def main():
     print(Fore.CYAN + "\n" + "═" * 90)
     print(Fore.YELLOW + "🏰  THE SILVER BLADE GUILD  🏰".center(90))
     print(Fore.CYAN + "═" * 90 + Style.RESET_ALL)
-    print(Fore.WHITE + "          A Text-Based RPG Adventure\n".center(90))
+    print(Fore.WHITE + "          Text-Based RPG Adventure\n".center(90))
 
     player, unlocked_quests = load_or_create_player()
     
@@ -35,7 +35,6 @@ def main():
     while True:
         if player.health <= 0:
             print(Fore.RED + "\n💀 YOU HAVE BEEN DEFEATED...")
-            print("The guild will remember your bravery.")
             break
 
         if all(q.completed for q in quests.values()):
@@ -95,7 +94,7 @@ def main():
                     unlocked_quests = new_unlocked or ["goblin"]
                     player.achievement_system = achievement_system
                     player.skill_system = SkillSystem()
-                    print(Fore.GREEN + f"✅ Loaded Slot {slot} successfully!")
+                    print(Fore.GREEN + f"✅ Loaded Slot {slot}!")
             except:
                 print(Fore.RED + "Usage: load <1-3>")
         elif cmd == "saves":
@@ -121,7 +120,7 @@ def create_quests():
         "goblin": Quest("Goblin Trouble", "Defeat 3 goblins near the village.", 35, 70, 3),
         "wolf": Quest("Forest Menace", "Clear 2 wolves from the forest road.", 50, 100, 2),
         "bandit": Quest("Road Bandits", "Defeat the bandit leader.", 80, 160, 1),
-        "dragon": Quest("Dragon of Eldergloom", "Defeat the ancient dragon to save the kingdom!", 250, 600, 1, True)
+        "dragon": Quest("Dragon of Eldergloom", "Defeat the ancient dragon!", 250, 600, 1, True)
     }
 
 def show_help():
@@ -146,8 +145,8 @@ def show_victory_screen(player):
     print("🏆  LEGENDARY VICTORY  🏆".center(90))
     print("★" * 90 + Style.RESET_ALL)
     print(Fore.GREEN + f"\nCongratulations, {player.name}!")
-    print("You have completed every quest and slain the Dragon!")
-    print("You are now a true legend of the Silver Blade Guild.\n")
+    print("You have completed all quests and defeated the Dragon of Eldergloom!")
+    print("You are now a true Legend of the Silver Blade Guild.\n")
     player.show_stats()
 
 def show_crafting(player, unlocked_quests):
@@ -166,17 +165,17 @@ def show_crafting(player, unlocked_quests):
             crafted = Item("Iron Sword", "A reliable blade", 0, 0, attack_bonus=10, is_equipment=True)
         elif choice == "2" and player.gold >= 65:
             player.gold -= 65
-            crafted = Item("Steel Armor", "Heavy protection", 0, 0, health_bonus=35, is_equipment=True)
+            crafted = Item("Steel Armor", "Strong protection", 0, 0, health_bonus=35, is_equipment=True)
         elif choice == "3" and player.gold >= 25:
             player.gold -= 25
             crafted = Item("Strong Potion", "Restores 50 health", 0, heal_amount=50)
         elif choice == "4" and player.gold >= 100:
             player.gold -= 100
-            crafted = Item("Mystic Ring", "Increases attack", 0, 0, attack_bonus=5, is_equipment=True)
+            crafted = Item("Mystic Ring", "Magical ring", 0, 0, attack_bonus=5, is_equipment=True)
 
         if crafted:
             player.add_to_inventory(crafted)
-            print(Fore.GREEN + f"✅ Crafted: {crafted.name}")
+            print(Fore.GREEN + f"✅ Crafted: {crafted.name}!")
             save_game(player, unlocked_quests, 1)
     except:
         print(Fore.RED + "Crafting cancelled.")
@@ -211,27 +210,33 @@ def handle_fight(player, current_location, achievement_system):
     if current_location.name == "Guild Hall":
         print(Fore.YELLOW + "It's peaceful here.")
         return
+    
     enemy = current_location.get_random_enemy()
-    if enemy and fight(player, enemy):
-        drop = get_random_drop(enemy)
-        if drop:
-            player.add_to_inventory(drop)
-            print(Fore.GREEN + f"🎁 Dropped: {drop.name}!")
+    if enemy:
+        # Dynamic enemy scaling based on player level
+        enemy.health = int(enemy.health * (1 + player.level * 0.1))
+        enemy.attack = int(enemy.attack * (1 + player.level * 0.08))
         
-        if "Goblin" in enemy.name: achievement_system.stats["goblins_killed"] += 1
-        if "Wolf" in enemy.name: achievement_system.stats["wolves_killed"] += 1
-        achievement_system.check_achievements(player)
+        if fight(player, enemy):
+            drop = get_random_drop(enemy)
+            if drop:
+                player.add_to_inventory(drop)
+                print(Fore.GREEN + f"🎁 Dropped: {drop.name}!")
+            
+            if "Goblin" in enemy.name: achievement_system.stats["goblins_killed"] += 1
+            if "Wolf" in enemy.name: achievement_system.stats["wolves_killed"] += 1
+            achievement_system.check_achievements(player)
 
 def get_random_drop(enemy):
-    if random.random() < 0.4:
-        return None
-    drops = [
-        Item("Goblin Ear", "Trophy", 8),
-        Item("Wolf Fang", "Sharp fang", 12),
-        Item("Healing Herb", "Restores 20 HP", 0, heal_amount=20),
-        Item("Rusty Dagger", "Old weapon", 0, 0, attack_bonus=4, is_equipment=True)
-    ]
-    return random.choice(drops)
+    if random.random() < 0.45:
+        drops = [
+            Item("Goblin Ear", "Trophy", 8),
+            Item("Wolf Fang", "Sharp fang", 12),
+            Item("Healing Herb", "Restores 20 HP", 0, heal_amount=20),
+            Item("Rusty Dagger", "Old weapon", 0, 0, attack_bonus=4, is_equipment=True)
+        ]
+        return random.choice(drops)
+    return None
 
 def rest_at_guild(player):
     player.heal(45)
@@ -249,7 +254,7 @@ def accept_quest(quest_key, player, quests, unlocked_quests):
 
 def show_quest_board(quests, unlocked_quests):
     print(Fore.CYAN + "\n📋 QUEST BOARD" + Style.RESET_ALL)
-    print("="*60)
+    print("="*65)
     for key in unlocked_quests:
         q = quests[key]
         status = "✅ Completed" if q.completed else "⏳ Available"

@@ -16,10 +16,10 @@ from item import Item
 VERSION = "1.0.0"
 
 def main():
-    print(Fore.CYAN + "\n" + "═" * 90)
-    print(Fore.YELLOW + "🏰  THE SILVER BLADE GUILD  🏰".center(90))
-    print(Fore.CYAN + "═" * 90 + Style.RESET_ALL)
-    print(Fore.WHITE + f"          Version {VERSION} - Final Release\n".center(90))
+    print(Fore.CYAN + "\n" + "═" * 92)
+    print(Fore.YELLOW + "🏰  THE SILVER BLADE GUILD  🏰".center(92))
+    print(Fore.CYAN + "═" * 92 + Style.RESET_ALL)
+    print(Fore.WHITE + f"          Version {VERSION} - Final Release\n".center(92))
 
     player, unlocked_quests = load_or_create_player()
     
@@ -103,6 +103,9 @@ def main():
             list_saves()
         elif cmd == "craft":
             show_crafting(player, unlocked_quests)
+        elif cmd == "version" or cmd == "about":
+            print(Fore.CYAN + f"\nGuild Quest v{VERSION}")
+            print("Built commit-by-commit as a learning project.")
         else:
             print(Fore.RED + "❌ Unknown command. Type 'help'.")
 
@@ -129,7 +132,7 @@ def show_help():
     print(Fore.CYAN + "\n📜 Available Commands:" + Style.RESET_ALL)
     print("  help | stats | achievements | skills | questboard | inventory | craft")
     print("  go <location> | fight | shop | buy <num> | use <item> | equip <item>")
-    print("  rest | save <1-3> | load <1-3> | saves | quit")
+    print("  rest | save <1-3> | load <1-3> | saves | version | quit")
 
 def show_inventory(player):
     print(Fore.MAGENTA + "\n🎒 INVENTORY" + Style.RESET_ALL)
@@ -143,9 +146,9 @@ def show_inventory(player):
     print("=" * 60)
 
 def show_victory_screen(player):
-    print(Fore.YELLOW + "\n" + "★" * 90)
-    print("🏆  LEGENDARY VICTORY  🏆".center(90))
-    print("★" * 90 + Style.RESET_ALL)
+    print(Fore.YELLOW + "\n" + "★" * 92)
+    print("🏆  LEGENDARY VICTORY  🏆".center(92))
+    print("★" * 92 + Style.RESET_ALL)
     print(Fore.GREEN + f"\nCongratulations, {player.name}!")
     print("You have completed every quest and defeated the Dragon of Eldergloom!")
     print("You are now a true Legend of the Silver Blade Guild.\n")

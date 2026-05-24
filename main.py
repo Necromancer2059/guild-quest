@@ -16,10 +16,10 @@ from item import Item
 VERSION = "1.0.0"
 
 def main():
-    print(Fore.CYAN + "\n" + "═" * 92)
-    print(Fore.YELLOW + "🏰  THE SILVER BLADE GUILD  🏰".center(92))
-    print(Fore.CYAN + "═" * 92 + Style.RESET_ALL)
-    print(Fore.WHITE + f"          Version {VERSION} - Final Release\n".center(92))
+    print(Fore.CYAN + "\n" + "═" * 95)
+    print(Fore.YELLOW + "🏰  THE SILVER BLADE GUILD  🏰".center(95))
+    print(Fore.CYAN + "═" * 95 + Style.RESET_ALL)
+    print(Fore.WHITE + f"          Version {VERSION} - Final Release\n".center(95))
 
     player, unlocked_quests = load_or_create_player()
     
@@ -103,9 +103,8 @@ def main():
             list_saves()
         elif cmd == "craft":
             show_crafting(player, unlocked_quests)
-        elif cmd == "version" or cmd == "about":
-            print(Fore.CYAN + f"\nGuild Quest v{VERSION}")
-            print("Built commit-by-commit as a learning project.")
+        elif cmd in ["version", "about"]:
+            print(Fore.CYAN + f"\nGuild Quest v{VERSION} - Final Release")
         else:
             print(Fore.RED + "❌ Unknown command. Type 'help'.")
 
@@ -150,7 +149,7 @@ def show_victory_screen(player):
     print("🏆  LEGENDARY VICTORY  🏆".center(92))
     print("★" * 92 + Style.RESET_ALL)
     print(Fore.GREEN + f"\nCongratulations, {player.name}!")
-    print("You have completed every quest and defeated the Dragon of Eldergloom!")
+    print("You have completed all quests and defeated the Dragon of Eldergloom!")
     print("You are now a true Legend of the Silver Blade Guild.\n")
     player.show_stats()
 
@@ -185,8 +184,7 @@ def show_crafting(player, unlocked_quests):
     except:
         print(Fore.RED + "Crafting cancelled.")
 
-# ==================== Helper Functions ====================
-
+# Helper Functions
 def handle_buy(cmd, player, shop, unlocked_quests):
     try:
         idx = int(cmd.split()[1])
@@ -221,9 +219,6 @@ def handle_fight(player, current_location, achievement_system):
         if drop:
             player.add_to_inventory(drop)
             print(Fore.GREEN + f"🎁 Dropped: {drop.name}!")
-        
-        if "Goblin" in enemy.name: achievement_system.stats["goblins_killed"] += 1
-        if "Wolf" in enemy.name: achievement_system.stats["wolves_killed"] += 1
         achievement_system.check_achievements(player)
 
 def get_random_drop(enemy):
@@ -248,8 +243,6 @@ def accept_quest(quest_key, player, quests, unlocked_quests):
         if quests[quest_key] not in player.active_quests:
             player.accept_quest(quests[quest_key])
             print(Fore.GREEN + f"✅ Accepted: {quests[quest_key].title}")
-    else:
-        print(Fore.RED + "Quest not available.")
 
 def show_quest_board(quests, unlocked_quests):
     print(Fore.CYAN + "\n📋 QUEST BOARD" + Style.RESET_ALL)

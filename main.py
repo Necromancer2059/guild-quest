@@ -23,10 +23,11 @@ def show_title_screen():
     print(Fore.WHITE + f"          Version {VERSION} - Final Release".center(95))
     print(Fore.WHITE + "       Built commit-by-commit\n".center(95))
     
-    time.sleep(0.6)
-    print(Fore.WHITE + "The grand doors of the guild open before you...")
-    time.sleep(1)
-    print(Fore.GREEN + "Your legend begins now...\n")
+    time.sleep(0.8)
+    print(Fore.WHITE + "The heavy wooden doors of the guild hall creak open...")
+    time.sleep(1.2)
+    print(Fore.GREEN + "A new adventurer steps forward...\n")
+    time.sleep(0.7)
 
 def main():
     show_title_screen()
@@ -58,7 +59,7 @@ def main():
 
         if cmd in ["quit", "exit"]:
             save_game(player, unlocked_quests, 1)
-            print(Fore.YELLOW + f"\n👋 Farewell, {player.name}!")
+            print(Fore.YELLOW + f"\n👋 Farewell, {player.name}! Your legend lives on.")
             break
 
         elif cmd == "help":
@@ -159,7 +160,7 @@ def show_victory_screen(player):
     print("🏆  LEGENDARY VICTORY  🏆".center(95))
     print("★" * 95 + Style.RESET_ALL)
     print(Fore.GREEN + f"\nCongratulations, {player.name}!")
-    print("You have completed all quests and slain the Dragon of Eldergloom!")
+    print("You have completed every quest and slain the Dragon of Eldergloom!")
     print("You are now a true Legend of the Silver Blade Guild.\n")
     player.show_stats()
 
@@ -194,8 +195,7 @@ def show_crafting(player, unlocked_quests):
     except:
         print(Fore.RED + "Crafting cancelled.")
 
-# ==================== Helper Functions ====================
-
+# Helper Functions (same as previous)
 def handle_buy(cmd, player, shop, unlocked_quests):
     try:
         idx = int(cmd.split()[1])

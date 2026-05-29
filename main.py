@@ -23,11 +23,11 @@ def show_title_screen():
     print(Fore.WHITE + f"          Version {VERSION} - Final Release".center(95))
     print(Fore.WHITE + "       Built commit-by-commit\n".center(95))
     
-    time.sleep(0.6)
-    print(Fore.WHITE + "The heavy doors of the legendary Silver Blade Guild open...")
-    time.sleep(1.1)
-    print(Fore.GREEN + "Your journey as a new adventurer begins now...\n")
     time.sleep(0.8)
+    print(Fore.WHITE + "The grand doors of the Silver Blade Guild slowly open...")
+    time.sleep(1.2)
+    print(Fore.GREEN + "A new hero's journey begins...\n")
+    time.sleep(0.7)
 
 def main():
     show_title_screen()
@@ -177,4 +177,27 @@ def show_crafting(player, unlocked_quests):
     try:
         choice = input(Fore.WHITE + "\nCraft > " + Style.RESET_ALL).strip()
         crafted = None
-        if choice == "1" and player
+        if choice == "1" and player.gold >= 40:
+            player.gold -= 40
+            crafted = Item("Iron Sword", "A reliable blade", 0, 0, attack_bonus=10, is_equipment=True)
+        elif choice == "2" and player.gold >= 65:
+            player.gold -= 65
+            crafted = Item("Steel Armor", "Strong protection", 0, 0, health_bonus=35, is_equipment=True)
+        elif choice == "3" and player.gold >= 25:
+            player.gold -= 25
+            crafted = Item("Strong Potion", "Restores 50 health", 0, heal_amount=50)
+        elif choice == "4" and player.gold >= 100:
+            player.gold -= 100
+            crafted = Item("Mystic Ring", "Magical ring", 0, 0, attack_bonus=5, is_equipment=True)
+
+        if crafted:
+            player.add_to_inventory(crafted)
+            print(Fore.GREEN + f"✅ Crafted: {crafted.name}!")
+            save_game(player, unlocked_quests, 1)
+    except:
+        print(Fore.RED + "Crafting cancelled.")
+
+# (All other helper functions like handle_buy, handle_use, handle_go, handle_fight, rest_at_guild, accept_quest, show_quest_board, get_random_drop remain the same as previous versions)
+
+if __name__ == "__main__":
+    main()

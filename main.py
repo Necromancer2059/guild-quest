@@ -24,9 +24,9 @@ def show_title_screen():
     print(Fore.WHITE + "       Built commit-by-commit\n".center(95))
     
     time.sleep(0.8)
-    print(Fore.WHITE + "The grand doors of the guild open before you...")
+    print(Fore.WHITE + "The grand doors of the Silver Blade Guild open before you...")
     time.sleep(1.1)
-    print(Fore.GREEN + "Your adventure begins...\n")
+    print(Fore.GREEN + "Your legend begins now...\n")
     time.sleep(0.7)
 
 def main():
@@ -115,11 +115,11 @@ def main():
         elif cmd == "craft":
             show_crafting(player, unlocked_quests)
         elif cmd in ["version", "about"]:
-            print(Fore.CYAN + f"\nGuild Quest v{VERSION}")
+            print(Fore.CYAN + f"\nGuild Quest v{VERSION} - Final Release")
         else:
             print(Fore.RED + "❌ Unknown command. Type 'help'.")
 
-# ==================== Helper Functions (keep from previous versions) ====================
+# ==================== Helper Functions (keep from previous) ====================
 
 def load_or_create_player():
     player, unlocked = load_game(1)
@@ -146,7 +146,7 @@ def show_help():
     print("  go <location> | fight | shop | buy <num> | use <item> | equip <item>")
     print("  rest | save <1-3> | load <1-3> | saves | version | quit")
 
-# (Add the rest of your helper functions like show_inventory, show_victory_screen, handle_fight, etc.)
+# (All other helper functions like show_inventory, show_victory_screen, handle_fight, etc. should be kept from your previous version)
 
 if __name__ == "__main__":
     main()

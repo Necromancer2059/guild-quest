@@ -24,9 +24,9 @@ def show_title_screen():
     print(Fore.WHITE + "       Built commit-by-commit\n".center(95))
     
     time.sleep(0.8)
-    print(Fore.WHITE + "The grand doors of the Silver Blade Guild open before you...")
+    print(Fore.WHITE + "The grand doors of the Silver Blade Guild open...")
     time.sleep(1.1)
-    print(Fore.GREEN + "Your legend begins now...\n")
+    print(Fore.GREEN + "Your legend as a new adventurer begins now...\n")
     time.sleep(0.7)
 
 def main():
@@ -119,34 +119,13 @@ def main():
         else:
             print(Fore.RED + "❌ Unknown command. Type 'help'.")
 
-# ==================== Helper Functions (keep from previous) ====================
-
-def load_or_create_player():
-    player, unlocked = load_game(1)
-    if player:
-        print(Fore.GREEN + f"Welcome back, {player.name}!")
-        return player, unlocked
-    else:
-        name = input(Fore.WHITE + "What is your name, adventurer? > " + Style.RESET_ALL).strip() or "Hero"
-        player = Player(name)
-        print(Fore.GREEN + f"\n🎉 Welcome to the Silver Blade Guild, {name}!\n")
-        return player, ["goblin"]
-
-def create_quests():
-    return {
-        "goblin": Quest("Goblin Trouble", "Defeat 3 goblins near the village.", 35, 70, 3),
-        "wolf": Quest("Forest Menace", "Clear 2 wolves from the forest road.", 50, 100, 2),
-        "bandit": Quest("Road Bandits", "Defeat the bandit leader.", 80, 160, 1),
-        "dragon": Quest("Dragon of Eldergloom", "Defeat the ancient dragon!", 250, 600, 1, True)
-    }
+# (Keep all your helper functions from the previous version)
 
 def show_help():
     print(Fore.CYAN + "\n📜 Available Commands:" + Style.RESET_ALL)
     print("  help | stats | achievements | skills | questboard | inventory | craft")
     print("  go <location> | fight | shop | buy <num> | use <item> | equip <item>")
     print("  rest | save <1-3> | load <1-3> | saves | version | quit")
-
-# (All other helper functions like show_inventory, show_victory_screen, handle_fight, etc. should be kept from your previous version)
 
 if __name__ == "__main__":
     main()

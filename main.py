@@ -119,13 +119,7 @@ def main():
         else:
             print(Fore.RED + "❌ Unknown command. Type 'help'.")
 
-# (Keep all your helper functions from the previous version)
-
-def show_help():
-    print(Fore.CYAN + "\n📜 Available Commands:" + Style.RESET_ALL)
-    print("  help | stats | achievements | skills | questboard | inventory | craft")
-    print("  go <location> | fight | shop | buy <num> | use <item> | equip <item>")
-    print("  rest | save <1-3> | load <1-3> | saves | version | quit")
+# (Keep your existing helper functions: show_help, show_inventory, show_victory_screen, handle_buy, handle_use, handle_go, handle_fight, rest_at_guild, accept_quest, show_quest_board, get_random_drop, show_crafting)
 
 if __name__ == "__main__":
     main()

@@ -119,7 +119,7 @@ def main():
         else:
             print(Fore.RED + "❌ Unknown command. Type 'help'.")
 
-# (Keep all your existing helper functions here)
+# Keep your helper functions here (show_help, show_inventory, show_victory_screen, handle_buy, etc.)
 
 if __name__ == "__main__":
     main()

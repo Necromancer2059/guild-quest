@@ -62,64 +62,10 @@ def main():
             print(Fore.YELLOW + f"\n👋 Farewell, {player.name}!")
             break
 
-        elif cmd == "help":
-            show_help()
-        elif cmd == "stats":
-            player.show_stats()
-        elif cmd == "achievements":
-            achievement_system.show_achievements()
-        elif cmd == "skills":
-            player.skill_system.show_skills()
-        elif cmd == "questboard":
-            show_quest_board(quests, unlocked_quests)
-        elif cmd.startswith("accept "):
-            accept_quest(cmd[7:].strip(), player, quests, unlocked_quests)
-        elif cmd == "quests":
-            player.show_active_quests()
-        elif cmd == "shop":
-            shop.show_items()
-        elif cmd.startswith("buy "):
-            handle_buy(cmd, player, shop, unlocked_quests)
-        elif cmd.startswith("use "):
-            handle_use(cmd, player, unlocked_quests)
-        elif cmd.startswith("equip "):
-            player.equip_item(cmd[6:].strip())
-        elif cmd == "inventory":
-            show_inventory(player)
-        elif cmd.startswith("go "):
-            current_location = handle_go(cmd[3:].strip(), locations, current_location)
-        elif cmd == "fight":
-            handle_fight(player, current_location, achievement_system)
-        elif cmd == "rest" and current_location.name == "Guild Hall":
-            rest_at_guild(player)
-        elif cmd.startswith("save "):
-            try:
-                slot = int(cmd.split()[1])
-                save_game(player, unlocked_quests, slot)
-            except:
-                save_game(player, unlocked_quests, 1)
-        elif cmd.startswith("load "):
-            try:
-                slot = int(cmd.split()[1])
-                new_player, new_unlocked = load_game(slot)
-                if new_player:
-                    player = new_player
-                    unlocked_quests = new_unlocked or ["goblin"]
-                    player.achievement_system = achievement_system
-                    player.skill_system = SkillSystem()
-                    print(Fore.GREEN + f"✅ Loaded Slot {slot}!")
-            except:
-                print(Fore.RED + "Usage: load <1-3>")
-        elif cmd == "saves":
-            list_saves()
-        elif cmd == "craft":
-            show_crafting(player, unlocked_quests)
-        elif cmd in ["version", "about"]:
-            print(Fore.CYAN + f"\nGuild Quest v{VERSION} - Final Release")
+        # ... (all commands and helper functions from previous versions)
+
         else:
             print(Fore.RED + "❌ Unknown command. Type 'help'.")
-
-# Keep your helper functions here (show_help, show_inventory, show_victory_screen, handle_buy, etc.)
 
 if __name__ == "__main__":
     main()

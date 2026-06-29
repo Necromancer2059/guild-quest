@@ -23,11 +23,11 @@ def show_title_screen():
     print(Fore.WHITE + f"          Version {VERSION} - Final Release".center(95))
     print(Fore.WHITE + "       Built commit-by-commit\n".center(95))
     
-    time.sleep(0.8)
+    time.sleep(0.5)
     print(Fore.WHITE + "The grand doors of the Silver Blade Guild open...")
-    time.sleep(1.1)
+    time.sleep(0.9)
     print(Fore.GREEN + "Your legend as a new adventurer begins now...\n")
-    time.sleep(0.7)
+    time.sleep(0.6)
 
 def main():
     show_title_screen()
@@ -119,7 +119,7 @@ def main():
         else:
             print(Fore.RED + "❌ Unknown command. Type 'help'.")
 
-# Keep your helper functions here (show_help, show_inventory, show_victory_screen, handle_buy, etc.)
+# Keep your helper functions here
 
 if __name__ == "__main__":
     main()

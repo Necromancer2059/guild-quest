@@ -117,7 +117,7 @@ def main():
         elif cmd in ["version", "about"]:
             print(Fore.CYAN + f"\nGuild Quest v{VERSION} - Final Release")
         else:
-            print(Fore.RED + "❌ Unknown command. Type 'help'.")
+            print(Fore.RED + f"❌ Unknown command '{cmd}'. Type 'help' for a list of commands.")
 
 # Keep your helper functions here (show_help, show_inventory, show_victory_screen, handle_buy, etc.)
 

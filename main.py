@@ -1,115 +1,125 @@
-"use client";
+import random
+import time
+from colorama import init, Fore, Style
 
-import { useState, useEffect } from "react";
-import { Trophy, Zap, Flame, CheckCircle } from "lucide-react";
+init(autoreset=True)
 
-interface LeaderboardProps {
-  data: any[];
-}
+from player import Player
+from quest import Quest
+from enemy import Enemy, fight
+from shop import Shop
+from save_manager import save_game, load_game, list_saves
+from achievements import AchievementSystem
+from location import create_locations
+from skills import SkillSystem
+from item import Item
 
-export default function Leaderboard({ data }: LeaderboardProps) {
-  const [leaders, setLeaders] = useState(data);
-  const [selectedRank, setSelectedRank] = useState<number | null>(null);
-  const [glitchTrigger, setGlitchTrigger] = useState(0);
+VERSION = "1.0.0"
 
-  useEffect(() => {
-    setLeaders(data);
-  }, [data]);
+def show_title_screen():
+    print(Fore.CYAN + "\n" + "═" * 95)
+    print(Fore.YELLOW + "🏰  THE SILVER BLADE GUILD  🏰".center(95))
+    print(Fore.CYAN + "═" * 95 + Style.RESET_ALL)
+    print(Fore.WHITE + f"          Version {VERSION} - Final Release".center(95))
+    print(Fore.WHITE + "       Built commit-by-commit\n".center(95))
+    
+    time.sleep(0.8)
+    print(Fore.WHITE + "The grand doors of the Silver Blade Guild open...")
+    time.sleep(1.1)
+    print(Fore.GREEN + "Your legend as a new adventurer begins now...\n")
+    time.sleep(0.7)
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setGlitchTrigger((prev) => prev + 1);
-      setLeaders((prev) => {
-        const copy = [...prev];
-        const idx = Math.floor(Math.random() * copy.length);
-        copy[idx] = { ...copy[idx], score: copy[idx].score + Math.floor(Math.random() * 100) };
-        return copy;
-      });
-    }, 7000);
-    return () => clearInterval(interval);
-  }, []);
+def main():
+    show_title_screen()
 
-  const verifyOnBasescan = (rank: number) => {
-    alert(`🔍 VERIFYING SCORE #${rank} ON BASESCAN • Tx confirmed • User is legit`);
-    window.open(`https://basescan.org/tx/0xRiftTear${rank}Verified`, "_blank");
-  };
+    player, unlocked_quests = load_or_create_player()
+    
+    shop = Shop()
+    locations = create_locations()
+    current_location = locations["guild_hall"]
+    achievement_system = AchievementSystem()
+    player.achievement_system = achievement_system
+    player.skill_system = SkillSystem()
 
-  return (
-    <div className="glass w-full max-w-2xl mx-auto p-6 border border-[#0052FF]/30 relative overflow-hidden">
-      <div key={glitchTrigger} className="absolute inset-0 bg-[repeating-linear-gradient(45deg,#0052FF_0,#0052FF_2px,transparent_2px,transparent_6px)] opacity-10 pointer-events-none animate-[glitch_0.3s_linear_infinite]" />
+    quests = create_quests()
 
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Trophy className="w-7 h-7 text-[#ffcc00]" />
-          <div>
-            <div className="text-3xl font-black tracking-[-1px]">GLOBAL LEADERBOARD • VERIFIED</div>
-            <div className="text-xs text-[#0052FF] tracking-[2px]">TOP RIFT TEARS • LIVE ON BASE</div>
-          </div>
-        </div>
-        <button onClick={() => setLeaders(data)} className="text-xs px-4 py-1 bg-white/10 hover:bg-white/20">REFRESH ONCHAIN</button>
-      </div>
+    print(Fore.GREEN + f"\n📍 Current Location: {current_location.name}\n")
 
-      <div className="space-y-2">
-        {leaders.map((leader) => (
-          <div
-            key={leader.rank}
-            onClick={() => setSelectedRank(leader.rank)}
-            className={`group flex items-center justify-between px-6 py-4 rounded-3xl border transition-all cursor-pointer relative ${selectedRank === leader.rank ? "border-[#ffcc00] bg-[#ffcc00]/10" : "border-white/10 hover:border-[#0052FF]/60 hover:bg-white/5"}`}
-          >
-            {leader.verified && (
-              <div className="absolute -top-1 -right-1 bg-[#00ffcc] text-black text-[10px] font-bold px-2 py-0.5 rounded-bl-3xl flex items-center gap-1">
-                <CheckCircle className="w-3 h-3" /> ONCHAIN
-              </div>
-            )}
+    while True:
+        if player.health <= 0:
+            print(Fore.RED + "\n💀 YOU HAVE BEEN DEFEATED...")
+            break
 
-            <div className="flex items-center gap-6">
-              <div className={`w-8 h-8 flex items-center justify-center rounded-2xl font-black text-xl ${leader.rank === 1 ? "bg-[#ffcc00] text-black" : leader.rank === 2 ? "bg-[#c0c0c0] text-black" : leader.rank === 3 ? "bg-[#cd7f32] text-white" : "bg-white/10 text-white/70"}`}>
-                {leader.rank}
-              </div>
-              <div className="font-mono text-sm text-white/80 group-hover:text-white">
-                {leader.address}
-              </div>
-              <div className="text-xs px-3 py-1 rounded-2xl border border-white/20 text-white/50">
-                {leader.skin}
-              </div>
-            </div>
+        if all(q.completed for q in quests.values()):
+            show_victory_screen(player)
+            save_game(player, unlocked_quests, 1)
+            break
 
-            <div className="flex items-center gap-6">
-              <div className="text-right">
-                <div className="text-3xl font-mono text-[#0052FF] tracking-[-1px]">
-                  {leader.score.toLocaleString()}
-                </div>
-                <div className="text-[10px] text-white/40">TEARS</div>
-              </div>
+        cmd = input(Fore.WHITE + "\n> " + Style.RESET_ALL).strip().lower()
 
-              <button onClick={() => verifyOnBasescan(leader.rank)} className="text-xs px-4 py-1 border border-[#0052FF] hover:bg-[#0052FF]/10 text-[#0052FF]">
-                VERIFY ON BASESCAN →
-              </button>
+        if cmd in ["quit", "exit"]:
+            save_game(player, unlocked_quests, 1)
+            print(Fore.YELLOW + f"\n👋 Farewell, {player.name}!")
+            break
 
-              <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black" style={{ backgroundColor: leader.color }}>
-                <Zap className="w-3.5 h-3.5" />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+        elif cmd == "help":
+            show_help()
+        elif cmd == "stats":
+            player.show_stats()
+        elif cmd == "achievements":
+            achievement_system.show_achievements()
+        elif cmd == "skills":
+            player.skill_system.show_skills()
+        elif cmd == "questboard":
+            show_quest_board(quests, unlocked_quests)
+        elif cmd.startswith("accept "):
+            accept_quest(cmd[7:].strip(), player, quests, unlocked_quests)
+        elif cmd == "quests":
+            player.show_active_quests()
+        elif cmd == "shop":
+            shop.show_items()
+        elif cmd.startswith("buy "):
+            handle_buy(cmd, player, shop, unlocked_quests)
+        elif cmd.startswith("use "):
+            handle_use(cmd, player, unlocked_quests)
+        elif cmd.startswith("equip "):
+            player.equip_item(cmd[6:].strip())
+        elif cmd == "inventory":
+            show_inventory(player)
+        elif cmd.startswith("go "):
+            current_location = handle_go(cmd[3:].strip(), locations, current_location)
+        elif cmd == "fight":
+            handle_fight(player, current_location, achievement_system)
+        elif cmd == "rest" and current_location.name == "Guild Hall":
+            rest_at_guild(player)
+        elif cmd.startswith("save "):
+            try:
+                slot = int(cmd.split()[1])
+                save_game(player, unlocked_quests, slot)
+            except:
+                save_game(player, unlocked_quests, 1)
+        elif cmd.startswith("load "):
+            try:
+                slot = int(cmd.split()[1])
+                new_player, new_unlocked = load_game(slot)
+                if new_player:
+                    player = new_player
+                    unlocked_quests = new_unlocked or ["goblin"]
+                    player.achievement_system = achievement_system
+                    player.skill_system = SkillSystem()
+                    print(Fore.GREEN + f"✅ Loaded Slot {slot}!")
+            except:
+                print(Fore.RED + "Usage: load <1-3>")
+        elif cmd == "saves":
+            list_saves()
+        elif cmd == "craft":
+            show_crafting(player, unlocked_quests)
+        elif cmd in ["version", "about"]:
+            print(Fore.CYAN + f"\nGuild Quest v{VERSION} - Final Release")
+        else:
+            print(Fore.RED + f"❌ Unknown command '{cmd}'. Type 'help' for a list of commands.")
 
-      <div className="mt-8 text-center text-xs text-white/40 font-mono tracking-widest flex items-center justify-center gap-4">
-        <div className="h-px w-12 bg-white/20"></div>
-        ALL SCORES VERIFIED ONCHAIN • EVERY ENTRY HAS BASESCAN LINK • COMMIT 59/100
-        <div className="h-px w-12 bg-white/20"></div>
-      </div>
+# Keep your helper functions here (show_help, show_inventory, show_victory_screen, handle_buy, etc.)
 
-      <style jsx>{`
-        @keyframes glitch {
-          0% { transform: translate(0); }
-          20% { transform: translate(-2px, 2px); }
-          40% { transform: translate(-2px, -2px); }
-          60% { transform: translate(2px, 2px); }
-          80% { transform: translate(2px, -2px); }
-          100% { transform: translate(0); }
-        }
-      `}</style>
-    </div>
-  );
-}
+if __name__ == "__main__":
+    main()
